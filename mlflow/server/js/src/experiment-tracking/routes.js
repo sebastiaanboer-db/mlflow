@@ -6,6 +6,10 @@ class Routes {
   static getExperimentPageRoute(experimentId) {
     return `/experiments/${experimentId}`;
   }
+  static getExperimentsPageRoute(experimentIds) {
+    const ids = experimentIds.join(',');
+    return `/experiments/${ids}`;
+  }
 
   static experimentPageRoute = '/experiments/:experimentId';
 

@@ -31,16 +31,18 @@ class HomeView extends Component {
   }
 
   render() {
+    const experimentIds = this.props.experimentId.split(",")
+
     const headerHeight = process.env.HIDE_HEADER === 'true' ? 0 : 60;
     const containerHeight = 'calc(100% - ' + headerHeight + 'px)';
     if (process.env.HIDE_EXPERIMENT_LIST === 'true') {
       return (
         <div className='experiment-page-container' style={{ height: containerHeight }}>
-          {this.props.experimentId !== undefined ? (
-            <ExperimentPage experimentId={this.props.experimentId} />
-          ) : (
-            <NoExperimentView />
-          )}
+          {/*{this.props.experimentId !== undefined ? (*/}
+          {/*  <ExperimentPage experimentId={this.props.experimentId} />*/}
+          {/*) : (*/}
+          {/*  <NoExperimentView />*/}
+          {/*)}*/}
         </div>
       );
     }
@@ -50,17 +52,17 @@ class HomeView extends Component {
           <div className='HomePage-experiment-list-container'>
             <div className='collapsed-expander-container'>
               <ExperimentListView
-                activeExperimentId={this.props.experimentId}
+                activeExperimentIds={experimentIds}
                 onClickListExperiments={this.onClickListExperiments}
               />
             </div>
           </div>
           <div className='experiment-view-container'>
-            {this.props.experimentId !== undefined ? (
-              <ExperimentPage experimentId={this.props.experimentId} />
-            ) : (
-              <NoExperimentView />
-            )}
+            {/*{this.props.experimentId !== undefined ? (*/}
+            {/*  <ExperimentPage experimentId={this.props.experimentId} />*/}
+            {/*) : (*/}
+            {/*  <NoExperimentView />*/}
+            {/*)}*/}
           </div>
         </div>
       );
@@ -76,11 +78,11 @@ class HomeView extends Component {
             />
           </div>
           <div className='experiment-page-container'>
-            {this.props.experimentId !== undefined ? (
-              <ExperimentPage experimentId={this.props.experimentId} />
-            ) : (
-              <NoExperimentView />
-            )}
+            {/*{this.props.experimentId !== undefined ? (*/}
+            {/*  <ExperimentPage experimentId={this.props.experimentId} />*/}
+            {/*) : (*/}
+            {/*  <NoExperimentView />*/}
+            {/*)}*/}
           </div>
         </div>
       );
