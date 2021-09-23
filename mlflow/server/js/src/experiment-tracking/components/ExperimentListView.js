@@ -108,7 +108,7 @@ export class ExperimentListView extends Component {
     if (checked) {
       nextExperimentIds.push(experiment_id);
     } else {
-      nextExperimentIds.filter(e => e !== experiment_id)
+      nextExperimentIds = nextExperimentIds.filter(e => e !== experiment_id)
     }
     this.props.history.push(Routes.getExperimentsPageRoute(nextExperimentIds));
   };
