@@ -10,6 +10,7 @@ import { getUUID } from '../../common/utils/ActionUtils';
 class CompareRunPage extends Component {
   static propTypes = {
     experimentId: PropTypes.string,
+    experimentIds: PropTypes.string,
     runUuids: PropTypes.arrayOf(PropTypes.string).isRequired,
     dispatch: PropTypes.func.isRequired,
   };
@@ -32,7 +33,11 @@ class CompareRunPage extends Component {
     return (
       <div className='App-content'>
         <RequestStateWrapper requestIds={this.requestIds}>
-          <CompareRunView runUuids={this.props.runUuids} experimentId={this.props.experimentId} />
+          <CompareRunView
+            runUuids={this.props.runUuids}
+            experimentId={this.props.experimentId}
+            experimentIds={this.props.experimentIds}
+          />
         </RequestStateWrapper>
       </div>
     );
@@ -44,7 +49,8 @@ const mapStateToProps = (state, ownProps) => {
   const searchValues = qs.parse(location.search);
   const runUuids = JSON.parse(searchValues['?runs']);
   const experimentId = searchValues['experiment'] || null;
-  return { experimentId, runUuids };
+  const experimentIds = JSON.parse(searchValues['experiments']) || null;
+  return { experimentId, experimentIds, runUuids };
 };
 
 export default connect(mapStateToProps)(CompareRunPage);
