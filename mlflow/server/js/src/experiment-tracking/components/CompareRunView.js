@@ -20,8 +20,8 @@ const { TabPane } = Tabs;
 
 export class CompareRunView extends Component {
   static propTypes = {
-    experiment: PropTypes.instanceOf(Experiment).isRequired,
-    experimentId: PropTypes.string.isRequired,
+    experiment: PropTypes.instanceOf(Experiment),
+    experimentId: PropTypes.string,
     runInfos: PropTypes.arrayOf(PropTypes.instanceOf(RunInfo)).isRequired,
     runUuids: PropTypes.arrayOf(PropTypes.string).isRequired,
     metricLists: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.object)).isRequired,
@@ -51,24 +51,28 @@ export class CompareRunView extends Component {
 
   render() {
     const { experiment } = this.props;
-    const experimentId = experiment.getExperimentId();
+    const experimentId = experiment ? experiment.getExperimentId() : null;
     const { runInfos, runNames } = this.props;
     return (
       <div className='CompareRunView'>
-        <div className='header-container'>
-          <BreadcrumbTitle
-            experiment={experiment}
-            title={
-              <FormattedMessage
-                defaultMessage='Comparing {runs} Runs'
-                description='Breadcrumb title for compare runs page'
-                values={{
-                  runs: this.props.runInfos.length,
-                }}
-              />
-            }
-          />
-        </div>
+        {experimentId ? (
+          <div className='header-container'>
+            <BreadcrumbTitle
+              experiment={experiment}
+              title={
+                <FormattedMessage
+                  defaultMessage='Comparing {runs} Runs'
+                  description='Breadcrumb title for compare runs page'
+                  values={{
+                    runs: this.props.runInfos.length,
+                  }}
+                />
+              }
+            />
+          </div>
+        ) : (
+          ''
+        )}
         <div className='responsive-table-container'>
           <table className='compare-table table'>
             <thead>
