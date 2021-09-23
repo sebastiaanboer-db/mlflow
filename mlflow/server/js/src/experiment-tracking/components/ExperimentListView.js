@@ -190,7 +190,6 @@ export class ExperimentListView extends Component {
                     <Link
                       style={{ textDecoration: 'none', color: 'unset', width: '70%' }}
                       to={Routes.getExperimentPageRoute(experiment_id)}
-                      // onClick={active ? (ev) => ev.preventDefault() : (ev) => ev}
                     >
                       <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{name}</div>
                     </Link>
