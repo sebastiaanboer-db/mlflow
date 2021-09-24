@@ -38,10 +38,8 @@ class HomeView extends Component {
     let experimentPage;
     if (this.props.experimentId.length === 0) {
       experimentPage = <NoExperimentView />
-    } else if(experimentIds.length === 1) {
-      experimentPage = <ExperimentPage experimentId={this.props.experimentId}/>
     } else {
-      experimentPage = <div>not implemented</div>;
+      experimentPage = <ExperimentPage experimentIds={experimentIds}/>
     }
 
     if (process.env.HIDE_EXPERIMENT_LIST === 'true') {

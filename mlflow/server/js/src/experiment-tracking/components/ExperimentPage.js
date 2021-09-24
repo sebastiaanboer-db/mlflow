@@ -50,7 +50,7 @@ export const isNewRun = (lastRunsRefreshTime, run) => {
 
 export class ExperimentPage extends Component {
   static propTypes = {
-    experimentId: PropTypes.string.isRequired,
+    experimentIds: PropTypes.arrayOf(PropTypes.string).isRequired,
     experiment: PropTypes.instanceOf(Experiment),
     getExperimentApi: PropTypes.func.isRequired,
     searchRunsApi: PropTypes.func.isRequired,
@@ -78,7 +78,7 @@ export class ExperimentPage extends Component {
       lastRunsRefreshTime: Date.now(),
       numberOfNewRuns: 0,
       // Last experiment, if any, displayed by this instance of ExperimentPage
-      lastExperimentId: undefined,
+      lastExperimentIds: undefined,
       // Lifecycle filter of runs to display
       lifecycleFilter: LIFECYCLE_FILTER.ACTIVE,
       // Filter of model versions to display
@@ -105,13 +105,13 @@ export class ExperimentPage extends Component {
   }
 
   static getDerivedStateFromProps(props, state) {
-    if (props.experimentId !== state.lastExperimentId) {
+    if (props.experimentIds !== state.lastExperimentIds) {
       return {
         persistedState:
-          state.lastExperimentId === undefined
+          state.lastExperimentIds === undefined
             ? state.persistedState
             : new ExperimentPagePersistedState().toJSON(),
-        lastExperimentId: props.experimentId,
+        lastExperimentIds: props.experimentIds,
         lifecycleFilter: LIFECYCLE_FILTER.ACTIVE,
         nextPageToken: null,
       };
@@ -130,7 +130,7 @@ export class ExperimentPage extends Component {
   loadMoreRunsRequestId = getUUID();
 
   loadData() {
-    this.props.getExperimentApi(this.props.experimentId, this.getExperimentRequestId).catch((e) => {
+    this.props.getExperimentApi(this.props.experimentIds, this.getExperimentRequestId).catch((e) => {
       console.error(e);
     });
 
@@ -138,7 +138,7 @@ export class ExperimentPage extends Component {
   }
 
   maybeReloadData(prevProps) {
-    if (this.props.experimentId !== prevProps.experimentId) {
+    if (this.props.experimentIds !== prevProps.experimentIds) {
       this.loadData();
     }
   }
@@ -217,7 +217,7 @@ export class ExperimentPage extends Component {
     return getRunsAction({
       filter,
       runViewType: viewType,
-      experimentIds: [this.props.experimentId],
+      experimentIds: this.props.experimentIds,
       orderBy,
       pageToken: nextPageToken,
       shouldFetchParents,
@@ -298,7 +298,7 @@ export class ExperimentPage extends Component {
     if (Utils.isBrowserTabVisible()) {
       const lastRunsRefreshTime = this.state.lastRunsRefreshTime || 0;
       const latestRuns = await this.props.searchForNewRuns({
-        experimentIds: [this.props.experimentId],
+        experimentIds: this.props.experimentIds,
         maxResults: MAX_DETECT_NEW_RUNS_RESULTS,
       });
       let numberOfNewRuns = 0;
@@ -364,7 +364,7 @@ export class ExperimentPage extends Component {
     if (orderByAsc === false) {
       state['orderByAsc'] = orderByAsc;
     }
-    const newUrl = `/experiments/${this.props.experimentId}/s?${Utils.getSearchUrlFromState(
+    const newUrl = `/experiments/${this.props.experimentIds.join(',')}/s?${Utils.getSearchUrlFromState(
       state,
     )}`;
     if (newUrl !== this.props.history.location.pathname + this.props.history.location.search) {
@@ -405,7 +405,7 @@ export class ExperimentPage extends Component {
     const experimentViewProps = {
       paramKeyFilter: new KeyFilter(paramKeyFilterString),
       metricKeyFilter: new KeyFilter(metricKeyFilterString),
-      experimentId: this.props.experimentId,
+      experimentIds: this.props.experimentIds,
       experiment: this.props.experiment,
       searchRunsRequestId: this.searchRunsRequestId,
       modelVersionFilter: this.state.modelVersionFilter,
