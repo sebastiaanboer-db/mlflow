@@ -141,6 +141,23 @@ export class CompareRunView extends Component {
                 })}
               </tr>
               <tr>
+                <th scope='row' className='data-value'>
+                  <FormattedMessage
+                    defaultMessage='Experiment Id:'
+                    // eslint-disable-next-line max-len
+                    description='Row title for the experiment id of runs on the experiment compare runs page'
+                  />
+                </th>
+                {this.props.runInfos.map((run) => {
+                  const eachExperimentId = run.getExperimentId();
+                  return (
+                    <td className='meta-info' key={run.run_uuid}>
+                      {eachExperimentId}
+                    </td>
+                  );
+                })}
+              </tr>
+              <tr>
                 <th
                   scope='rowgroup'
                   className='inter-title'

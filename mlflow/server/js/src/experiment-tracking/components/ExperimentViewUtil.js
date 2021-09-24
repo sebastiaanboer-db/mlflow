@@ -181,6 +181,7 @@ export default class ExperimentViewUtil {
 
   static AttributeColumnLabels = {
     DATE: 'Start Time',
+    EXPERIMENT_ID: 'Experiment Id',
     USER: 'User',
     RUN_NAME: 'Run Name',
     SOURCE: 'Source',
@@ -198,6 +199,7 @@ export default class ExperimentViewUtil {
 
   static AttributeColumnSortKey = {
     DATE: 'attributes.start_time',
+    EXPERIMENT_ID: 'attributes.experiment_id',
     USER: 'tags.`mlflow.user`',
     RUN_NAME: 'tags.`mlflow.runName`',
     SOURCE: 'tags.`mlflow.source.name`',

@@ -178,6 +178,18 @@ export class ExperimentRunsTableMultiColumnView2 extends React.Component {
           cellStyle,
         },
         {
+          headerName: ExperimentViewUtil.AttributeColumnLabels.EXPERIMENT_ID,
+          field: 'experimentId',
+          pinned: 'left',
+          initialWidth: 150,
+          headerComponentParams: {
+            ...commonSortOrderProps,
+            canonicalSortKey: ExperimentViewUtil.AttributeColumnSortKey.EXPERIMENT_ID,
+            computedStylesOnSortKey: headerStyle,
+          },
+          cellStyle,
+        },
+        {
           headerName: ExperimentViewUtil.AttributeColumnLabels.RUN_NAME,
           pinned: 'left',
           field: 'runName',
@@ -328,6 +340,7 @@ export class ExperimentRunsTableMultiColumnView2 extends React.Component {
       const user = Utils.getUser(runInfo, tags);
       const queryParams = window.location && window.location.search ? window.location.search : '';
       const startTime = runInfo.start_time;
+      const experimentId = runInfo.experiment_id;
       const runName = Utils.getRunName(tags) || '-';
       const visibleTags = Utils.getVisibleTagValues(tags).map(([key, value]) => ({
         key,
@@ -337,6 +350,7 @@ export class ExperimentRunsTableMultiColumnView2 extends React.Component {
       return {
         runInfo,
         startTime,
+        experimentId,
         user,
         runName,
         tags,
