@@ -34,12 +34,12 @@ class HomeView extends Component {
     const headerHeight = process.env.HIDE_HEADER === 'true' ? 0 : 60;
     const containerHeight = 'calc(100% - ' + headerHeight + 'px)';
 
-    const experimentIds = this.props.experimentId ? this.props.experimentId.split(",") : [];
+    const experimentIds = this.props.experimentId ? this.props.experimentId.split(',') : [];
     let experimentPage;
     if (this.props.experimentId.length === 0) {
-      experimentPage = <NoExperimentView />
+      experimentPage = <NoExperimentView />;
     } else {
-      experimentPage = <ExperimentPage experimentIds={experimentIds}/>
+      experimentPage = <ExperimentPage experimentIds={experimentIds} />;
     }
 
     if (process.env.HIDE_EXPERIMENT_LIST === 'true') {
@@ -60,9 +60,7 @@ class HomeView extends Component {
               />
             </div>
           </div>
-          <div className='experiment-view-container'>
-            {experimentPage}
-          </div>
+          <div className='experiment-view-container'>{experimentPage}</div>
         </div>
       );
     } else {
@@ -76,9 +74,7 @@ class HomeView extends Component {
               className='expander fa fa-chevron-right login-icon'
             />
           </div>
-          <div className='experiment-page-container'>
-            {experimentPage}
-          </div>
+          <div className='experiment-page-container'>{experimentPage}</div>
         </div>
       );
     }

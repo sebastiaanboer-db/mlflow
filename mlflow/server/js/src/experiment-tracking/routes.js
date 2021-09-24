@@ -88,6 +88,12 @@ class Routes {
     return `/compare-runs?runs=${JSON.stringify(runUuids)}&experiment=${experimentId}`;
   }
 
+  static getCompareRunPageRouteWithMultipleExperiments(runUuids, experimentIds) {
+    return `/compare-runs?runs=${JSON.stringify(runUuids)}&experiments=[${experimentIds.join(
+      ',',
+    )}]`;
+  }
+
   static compareRunPageRoute = '/compare-runs';
 }
 

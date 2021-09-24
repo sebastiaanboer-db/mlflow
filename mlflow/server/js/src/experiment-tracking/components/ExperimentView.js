@@ -5,13 +5,13 @@ import { connect } from 'react-redux';
 import { injectIntl, FormattedMessage } from 'react-intl';
 // eslint-disable-next-line no-unused-vars
 import { Link, withRouter } from 'react-router-dom';
-import { Alert, Badge, Descriptions, Icon, Menu, Popover, Select, Tooltip } from 'antd';
+import { Alert, Badge, Icon, Menu, Popover, Select, Tooltip } from 'antd';
 
 import './ExperimentView.css';
 import { getExperimentTags, getParams, getRunInfo, getRunTags } from '../reducers/Reducers';
 import { setExperimentTagApi } from '../actions';
 import Routes from '../routes';
-import { Experiment, RunInfo } from '../sdk/MlflowMessages';
+import { RunInfo } from '../sdk/MlflowMessages';
 import { saveAs } from 'file-saver';
 import { getLatestMetrics } from '../reducers/MetricReducer';
 import KeyFilter from '../utils/KeyFilter';
@@ -25,7 +25,7 @@ import {
 import ExperimentViewUtil from './ExperimentViewUtil';
 import DeleteRunModal from './modals/DeleteRunModal';
 import RestoreRunModal from './modals/RestoreRunModal';
-import { NoteInfo, NOTE_CONTENT_TAG } from '../utils/NoteUtils';
+import { NOTE_CONTENT_TAG } from '../utils/NoteUtils';
 import LocalStorageUtils from '../../common/utils/LocalStorageUtils';
 import { ExperimentViewPersistedState } from '../sdk/MlflowLocalStorageMessages';
 import Utils from '../../common/utils/Utils';
@@ -37,8 +37,6 @@ import { getUUID } from '../../common/utils/ActionUtils';
 import { ExperimentTrackingDocUrl, onboarding } from '../../common/constants';
 import filterIcon from '../../common/static/filter-icon.svg';
 import { StyledDropdown } from '../../common/components/StyledDropdown';
-import { ExperimentNoteSection, ArtifactLocation } from './ExperimentViewHelpers';
-import { PageHeader } from '../../shared/building_blocks/PageHeader';
 import { FlexBar } from '../../shared/building_blocks/FlexBar';
 import { Button } from '../../shared/building_blocks/Button';
 import { Spacer } from '../../shared/building_blocks/Spacer';
@@ -78,7 +76,7 @@ export class ExperimentView extends Component {
     this.handleCancelEditNote = this.handleCancelEditNote.bind(this);
     this.getStartTimeColumnDisplayName = this.getStartTimeColumnDisplayName.bind(this);
     this.onHandleStartTimeDropdown = this.onHandleStartTimeDropdown.bind(this);
-    const store = ExperimentView.getLocalStore(this.props.experiment.experiment_id);
+    const store = ExperimentView.getLocalStore(this.props.experimentIds.join(','));
     const persistedState = new ExperimentViewPersistedState(store.loadComponentState());
     const onboardingInformationStore = ExperimentView.getLocalStore(onboarding);
     this.state = {
@@ -95,7 +93,7 @@ export class ExperimentView extends Component {
     onSearch: PropTypes.func.isRequired,
     runInfos: PropTypes.arrayOf(PropTypes.instanceOf(RunInfo)).isRequired,
     modelVersionsByRunUuid: PropTypes.object.isRequired,
-    experiment: PropTypes.instanceOf(Experiment).isRequired,
+    experimentIds: PropTypes.arrayOf(PropTypes.string).isRequired,
     history: PropTypes.any,
 
     // List of all parameter keys available in the runs we're viewing
@@ -197,7 +195,7 @@ export class ExperimentView extends Component {
 
   /** Snapshots desired attributes of the component's current state in local storage. */
   snapshotComponentState() {
-    const store = ExperimentView.getLocalStore(this.props.experiment.experiment_id);
+    const store = ExperimentView.getLocalStore(this.props.experimentIds.join(','));
     store.saveComponentState(new ExperimentViewPersistedState(this.state.persistedState));
   }
 
@@ -216,12 +214,7 @@ export class ExperimentView extends Component {
   }
 
   componentDidMount() {
-    let pageTitle = 'MLflow Experiment';
-    if (this.props.experiment.name) {
-      const experimentNameParts = this.props.experiment.name.split('/');
-      const experimentSuffix = experimentNameParts[experimentNameParts.length - 1];
-      pageTitle = `${experimentSuffix} - MLflow Experiment`;
-    }
+    const pageTitle = 'MLflow Experiment';
     Utils.updatePageTitle(pageTitle);
   }
 
@@ -317,7 +310,7 @@ export class ExperimentView extends Component {
   }
 
   handleSubmitEditNote(note) {
-    const { experiment_id } = this.props.experiment;
+    const { experiment_id } = this.props.experimentIds[0];
     this.props
       .setExperimentTagApi(experiment_id, NOTE_CONTENT_TAG, note, getUUID())
       .then(() => this.setState({ showNotesEditor: false }));
@@ -438,8 +431,6 @@ export class ExperimentView extends Component {
       loadingMore,
       numRunsFromLatestSearch,
       handleLoadMoreRuns,
-      experimentTags,
-      experiment,
       tagsList,
       paramKeyList,
       metricKeyList,
@@ -449,7 +440,6 @@ export class ExperimentView extends Component {
       nestChildren,
       numberOfNewRuns,
     } = this.props;
-    const { experiment_id, name } = experiment;
     const { persistedState } = this.state;
     const { unbaggedParams, unbaggedMetrics, categorizedUncheckedKeys } = persistedState;
     const filteredParamKeys = this.getFilteredKeys(paramKeyList, ColumnTypes.PARAMS);
@@ -461,7 +451,6 @@ export class ExperimentView extends Component {
     const compareDisabled = Object.keys(this.state.runsSelected).length < 2;
     const deleteDisabled = Object.keys(this.state.runsSelected).length < 1;
     const restoreDisabled = Object.keys(this.state.runsSelected).length < 1;
-    const noteInfo = NoteInfo.fromTags(experimentTags);
     const startTimeColumnLabels = this.getStartTimeColumnDisplayName();
     const searchInputHelpTooltipContent = (
       <div className='search-input-tooltip-content'>
@@ -500,16 +489,6 @@ export class ExperimentView extends Component {
           });
     };
     /* eslint-disable prefer-const */
-    let breadcrumbs = [];
-    let form;
-
-    let title = <>{name}</>;
-
-    const artifactLocationProps = {
-      experiment: this.props.experiment,
-      intl: this.props.intl,
-    };
-
     const {
       ColumnSortByAscending,
       ColumnSortByDescending,
@@ -529,28 +508,8 @@ export class ExperimentView extends Component {
           onClose={this.onCloseRestoreRunModal}
           selectedRunIds={Object.keys(this.state.runsSelected)}
         />
-        <PageHeader title={title} copyText={name} breadcrumbs={breadcrumbs} feedbackForm={form} />
+        {}
         {this.renderOnboardingContent()}
-        <Descriptions className='metadata-list'>
-          <Descriptions.Item
-            label={this.props.intl.formatMessage({
-              defaultMessage: 'Experiment ID',
-              description: 'Label for displaying the current experiment in view',
-            })}
-          >
-            {experiment_id}
-          </Descriptions.Item>
-          <ArtifactLocation {...artifactLocationProps} />
-        </Descriptions>
-        <div className='ExperimentView-info'>
-          <ExperimentNoteSection
-            noteInfo={noteInfo}
-            handleCancelEditNote={this.handleCancelEditNote}
-            handleSubmitEditNote={this.handleSubmitEditNote}
-            showNotesEditor={this.state.showNotesEditor}
-            startEditingDescription={this.startEditingDescription}
-          />
-        </div>
         <div className='ExperimentView-runs runs-table-flex-container'>
           {this.props.searchRunsError ? (
             <div className='error-message'>
@@ -922,7 +881,7 @@ export class ExperimentView extends Component {
             </CSSTransition>
             {this.state.persistedState.showMultiColumns && !this.props.forceCompactTableView ? (
               <ExperimentRunsTableMultiColumnView2
-                experimentId={experiment.experiment_id}
+                experimentIds={this.props.experimentIds}
                 modelVersionsByRunUuid={this.props.modelVersionsByRunUuid}
                 onSelectionChange={this.handleMultiColumnViewSelectionChange}
                 runInfos={this.props.runInfos}
@@ -1174,7 +1133,10 @@ export class ExperimentView extends Component {
   onCompare() {
     const runsSelectedList = Object.keys(this.state.runsSelected);
     this.props.history.push(
-      Routes.getCompareRunPageRoute(runsSelectedList, this.props.experiment.getExperimentId()),
+      Routes.getCompareRunPageRouteWithMultipleExperiments(
+        runsSelectedList,
+        this.props.experimentIds,
+      ),
     );
   }
 
@@ -1313,7 +1275,7 @@ export const mapStateToProps = (state, ownProps) => {
   // The runUuids we should serve.
   const { runInfosByUuid } = state.entities;
   const runUuids = Object.values(runInfosByUuid)
-    .filter((r) => r.experiment_id === ownProps.experimentId.toString())
+    .filter((r) => ownProps.experimentIds.indexOf(r.experiment_id) >= 0)
     .map((r) => r.run_uuid);
 
   const { modelVersionsByRunUuid } = state.entities;

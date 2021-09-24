@@ -5,7 +5,7 @@ import _ from 'lodash';
 import { withRouter } from 'react-router-dom';
 
 import './ExperimentPage.css';
-import { getExperimentApi, searchRunsApi, loadMoreRunsApi, searchRunsPayload } from '../actions';
+import { searchRunsApi, loadMoreRunsApi, searchRunsPayload } from '../actions';
 import { searchModelVersionsApi } from '../../model-registry/actions';
 import ExperimentView from './ExperimentView';
 import RequestStateWrapper from '../../common/components/RequestStateWrapper';
@@ -13,13 +13,8 @@ import KeyFilter from '../utils/KeyFilter';
 import { ViewType } from '../sdk/MlflowEnums';
 import { ExperimentPagePersistedState } from '../sdk/MlflowLocalStorageMessages';
 import Utils from '../../common/utils/Utils';
-import { ErrorCodes } from '../../common/constants';
-import { PermissionDeniedView } from './PermissionDeniedView';
-import { Spinner } from '../../common/components/Spinner';
 import { getUUID } from '../../common/utils/ActionUtils';
 import { MAX_RUNS_IN_SEARCH_MODEL_VERSIONS_FILTER } from '../../model-registry/constants';
-import { getExperiment } from '../reducers/Reducers';
-import { Experiment } from '../sdk/MlflowMessages';
 import { injectIntl } from 'react-intl';
 
 export const LIFECYCLE_FILTER = { ACTIVE: 'Active', DELETED: 'Deleted' };
@@ -51,8 +46,6 @@ export const isNewRun = (lastRunsRefreshTime, run) => {
 export class ExperimentPage extends Component {
   static propTypes = {
     experimentIds: PropTypes.arrayOf(PropTypes.string).isRequired,
-    experiment: PropTypes.instanceOf(Experiment),
-    getExperimentApi: PropTypes.func.isRequired,
     searchRunsApi: PropTypes.func.isRequired,
     searchModelVersionsApi: PropTypes.func.isRequired,
     loadMoreRunsApi: PropTypes.func.isRequired,
@@ -97,7 +90,7 @@ export class ExperimentPage extends Component {
 
   componentDidMount() {
     this.loadData();
-    this.detectNewRunsTimer = setInterval(() => this.detectNewRuns(), DETECT_NEW_RUNS_INTERVAL);
+    this.detectNewRunsTimer = null;
   }
 
   componentDidUpdate(prevProps) {
@@ -105,7 +98,9 @@ export class ExperimentPage extends Component {
   }
 
   static getDerivedStateFromProps(props, state) {
-    if (props.experimentIds !== state.lastExperimentIds) {
+    if (
+      props.experimentIds.length !== (state.lastExperimentIds && state.lastExperimentIds.length)
+    ) {
       return {
         persistedState:
           state.lastExperimentIds === undefined
@@ -124,21 +119,16 @@ export class ExperimentPage extends Component {
     this.detectNewRunsTimer = null;
   }
 
-  getExperimentRequestId = getUUID();
   searchRunsRequestId = getUUID();
   searchModelVersionsRequestId = getUUID();
   loadMoreRunsRequestId = getUUID();
 
   loadData() {
-    this.props.getExperimentApi(this.props.experimentIds, this.getExperimentRequestId).catch((e) => {
-      console.error(e);
-    });
-
     this.handleGettingRuns(this.props.searchRunsApi, this.searchRunsRequestId);
   }
 
   maybeReloadData(prevProps) {
-    if (this.props.experimentIds !== prevProps.experimentIds) {
+    if (this.props.experimentIds.length !== prevProps.experimentIds.length) {
       this.loadData();
     }
   }
@@ -364,9 +354,9 @@ export class ExperimentPage extends Component {
     if (orderByAsc === false) {
       state['orderByAsc'] = orderByAsc;
     }
-    const newUrl = `/experiments/${this.props.experimentIds.join(',')}/s?${Utils.getSearchUrlFromState(
-      state,
-    )}`;
+    const newUrl = `/experiments/${this.props.experimentIds.join(
+      ',',
+    )}/s?${Utils.getSearchUrlFromState(state)}`;
     if (newUrl !== this.props.history.location.pathname + this.props.history.location.search) {
       this.props.history.push(newUrl);
     }
@@ -374,23 +364,14 @@ export class ExperimentPage extends Component {
 
   renderExperimentView = (isLoading, shouldRenderError, requests) => {
     let searchRunsError;
-    const getExperimentRequest = Utils.getRequestWithId(requests, this.getExperimentRequestId);
 
     if (shouldRenderError) {
       const searchRunsRequest = Utils.getRequestWithId(requests, this.searchRunsRequestId);
-      if (
-        getExperimentRequest.error &&
-        getExperimentRequest.error.getErrorCode() === ErrorCodes.PERMISSION_DENIED
-      ) {
-        return <PermissionDeniedView errorMessage={getExperimentRequest.error.getMessageField()} />;
-      } else if (searchRunsRequest.error) {
+      if (searchRunsRequest.error) {
         searchRunsError = searchRunsRequest.error.getMessageField();
       } else {
         return undefined;
       }
-    }
-    if (!getExperimentRequest || getExperimentRequest.active) {
-      return <Spinner />;
     }
 
     const {
@@ -406,7 +387,6 @@ export class ExperimentPage extends Component {
       paramKeyFilter: new KeyFilter(paramKeyFilterString),
       metricKeyFilter: new KeyFilter(metricKeyFilterString),
       experimentIds: this.props.experimentIds,
-      experiment: this.props.experiment,
       searchRunsRequestId: this.searchRunsRequestId,
       modelVersionFilter: this.state.modelVersionFilter,
       lifecycleFilter: this.state.lifecycleFilter,
@@ -439,17 +419,15 @@ export class ExperimentPage extends Component {
   }
 
   getRequestIds() {
-    return [this.getExperimentRequestId, this.searchRunsRequestId];
+    return [this.searchRunsRequestId];
   }
 }
 
 const mapStateToProps = (state, ownProps) => {
-  const experiment = getExperiment(ownProps.experimentId, state);
-  return { experiment };
+  return {};
 };
 
 const mapDispatchToProps = {
-  getExperimentApi,
   searchRunsApi,
   loadMoreRunsApi,
   searchModelVersionsApi,
